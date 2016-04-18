@@ -28,7 +28,16 @@ public class QueueController
 	@RequestMapping("/addOrder")
 	public String addItem(@RequestParam(value="customerId") int customerId,@RequestParam(value="quantity") int quantity)
 	{
+		if(customerId>20000)
+		{
+			return "Customer ID should be less than 20000";
+		}
+		if(quantity>25 || quantity < 1)
+		{
+			return "Quantity of order should be between 0 and 25";
+		}
 		Order order = new Order(customerId, quantity);
+		//Check if order queue is empty
 		if(orderList.size() == 0)
 		{
 			orderList.add(order);
@@ -36,6 +45,7 @@ public class QueueController
 		}
 		else
 		{
+			//Check if customer has already place order
 			for(int i = 0;i<orderList.size();i++)
 			{
 				if(orderList.get(i).getCustomerId() == customerId)
@@ -43,6 +53,7 @@ public class QueueController
 					return "Order for Client ID " + String.valueOf(customerId) + " has been placed before. Cannot place new order.";
 				}
 			}
+			//Check for Customer ID less than 1000
 			if(customerId <1000)
 			{
 				int counter = 0;
@@ -53,12 +64,8 @@ public class QueueController
 					counter++;
 					
 				}
-				/*for(int i = orderList.size();i>counter;i--)
-				{
-					orderList.set(i, orderList.get(i-1));
-				}
-				orderList.set(counter, order);*/
-				if(customer>=1000)
+				//If end of list has not been reached
+				if(counter<orderList.size() && counter>0)
 				{
 					counter--;
 				}
@@ -76,20 +83,26 @@ public class QueueController
 
 	
 	/**
-	 * Function to remove a customer;s order from the list
+	 * Function to remove a customer's order from the list
 	 * @param customerId ID of the customer who wants the order to be removed
+	 * @return String value with status
 	 */
 	@RequestMapping("/removeOrder")
-	public void removeOrder(@RequestParam(value="customerId") int customerId)
+	public String removeOrder(@RequestParam(value="customerId") int customerId)
 	{
+		if(customerId>20000)
+		{
+			return "Customer ID should be less than 20000";
+		}
 		for(int i =0;i<orderList.size();i++)
 		{
 			if(orderList.get(i).getCustomerId() == customerId)
 			{
 				orderList.remove(i);
-				return;
+				return "Order for customer " + String.valueOf(customerId) + " removed";
 			}
 		}
+		return "Customer ID " + String.valueOf(customerId) + " not found in queue";
 	}
 
 	/**
@@ -106,27 +119,65 @@ public class QueueController
 	/**
 	 * Function to get the current position of a customer's order in the queue and the approx. waiting time in minutes
 	 * @param customerId ID of the customer requesting the status of order
-	 * @return String with current position of order and approx. waiting time in mib=nutes
+	 * @return String with current position of order and approx. waiting time in minutes
 	 */
 	@RequestMapping("/getWaitTime")
 	public String getWaitTime(@RequestParam(value="customerId") int customerId)
 	{
-		int totalPackages = 0;
+		if(customerId>20000)
+		{
+			return "Customer ID should be less than 20000";
+		}
 		JSONObject jsonObject = new JSONObject();
 		for(int i = 0;i<orderList.size();i++)
 		{
 			if(orderList.get(i).getCustomerId() == customerId)
 			{
 				jsonObject.append("Queue Position", i+1);
-				jsonObject.append("Wait Time", (totalPackages/25)*5);
-				//return (String.valueOf(i) + " " + String.valueOf((totalPackages/25)*5));
+				int minutes = getMinutes(i);
+				jsonObject.append("Wait Time", minutes);
 				return jsonObject.toString();
 			}
-			totalPackages+= orderList.get(i).getQuantity();
+			
 		}
-		return null;
+		return "No order for customer ID " + customerId + " found.";
 	}
 	
+	/**
+	 * Function to calculate approx. waiting time for an order
+	 * @param customerPos Position of customer
+	 * @return Integer value of waiting time
+	 */
+	private int getMinutes(int customerPos)
+	{
+		//Count initialized to 1 to show minimum 5 minutes even if customer's order is next order to be processed
+		int count = 1;
+		int totalOrder = 0;
+		for (int i = 0;i<=customerPos;i++)
+		{
+			if(totalOrder+orderList.get(i).getQuantity() <= 25)
+			{
+				totalOrder+=orderList.get(i).getQuantity();
+				
+				if(totalOrder == 25 && i!=customerPos)
+				{
+					totalOrder = 0;
+					count++;
+				}
+			}
+			else
+			{
+				totalOrder = orderList.get(i).getQuantity();
+				count++;
+			}
+		}
+		return count*5;
+	}
+	
+	/**
+	 * Function to delete orders which have been sent
+	 * @param orders ArrayList of orders which have been sent
+	 */
 	private void deleteOrders(ArrayList<Order> orders)
 	{
 		for(int i = 0;i<orders.size();i++)
@@ -153,8 +204,7 @@ public class QueueController
 			{
 				totalOrder+=orderList.get(i).getQuantity();
 				orders.add(orderList.get(i));
-				//orderList.remove(i);
-
+				
 				if(totalOrder == 25)
 				{
 					deleteOrders(orders);
