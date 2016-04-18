@@ -1,0 +1,1 @@
+START "runas /user:administrator" cmd /t:04 /K  java -jar CodeProject1.0-0.0.1-SNAPSHOT.jar
