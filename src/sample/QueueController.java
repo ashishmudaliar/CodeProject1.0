@@ -2,6 +2,7 @@ package sample;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -65,7 +66,7 @@ public class QueueController
 					
 				}
 				//If end of list has not been reached
-				if(counter<orderList.size() && counter>0)
+				if(customer>=1000 && counter>0)
 				{
 					counter--;
 				}
@@ -110,9 +111,18 @@ public class QueueController
 	 * @return ArrayList of orders
 	 */
 	@RequestMapping("/getList")
-	public ArrayList<Order> getList()
+	public String getList()
 	{
-		return orderList;
+		JSONArray jsonArray = new JSONArray();
+		for(int i = 0 ;i<orderList.size();i++)
+		{
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("Client ID", orderList.get(i).getCustomerId());
+			jsonObject.put("Quantity", orderList.get(i).getQuantity());
+			jsonObject.put("Waiting Time", getMinutes(i));
+			jsonArray.put(jsonObject);
+		}
+		return jsonArray.toString();
 	}
 
 	
