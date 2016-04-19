@@ -18,7 +18,7 @@ The JavaDoc for the project can be found in the docs folder
 
 <b>Running the Service </b>
 
-Run the file <b>run_codeproject.bat</b>. This file will execute the runnable JAR file <b>CodeProject1.0-0.0.1-SNAPSHOT</b>.The service will run on <b>http://localhost:8080</b>
+Run the file <b>run_codeproject.bat</b> or <b>run.sh</b>. This file will execute the runnable JAR file <b>CodeProject1.0-0.0.1-SNAPSHOT</b>.The service will run on <b>http://localhost:8080</b>
 
 <b> Access to the web service</b>
 
